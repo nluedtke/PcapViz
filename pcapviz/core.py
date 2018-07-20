@@ -1,11 +1,10 @@
 from collections import OrderedDict
-
+from geolite2 import geolite2
 import networkx
 import itertools
 from networkx import DiGraph
 
 from scapy.layers.inet import TCP, IP, UDP
-from pygeoip import GeoIP
 import logging
 
 import os
@@ -15,14 +14,14 @@ class GraphManager(object):
     """ Generates and processes the graph based on packets
     """
 
-    def __init__(self, packets, layer=3, geo_ip=os.path.expanduser('~/GeoIP.dat')):
+    def __init__(self, packets, layer=3):
         self.graph = DiGraph()
         self.layer = layer
         self.geo_ip = None
         self.data = {}
 
         try:
-            self.geo_ip = GeoIP(geo_ip)
+            self.geo_ip = geolite2.reader()
         except:
             logging.warning("could not load GeoIP data")
 
@@ -72,7 +71,10 @@ class GraphManager(object):
                 self.data[node]['ip'] = node.split(':')[0]
 
             node_ip = self.data[node]['ip']
-            country = self.geo_ip.country_name_by_addr(node_ip)
+            try:
+                country = self.geo_ip.get(node_ip)['country']['names']['en']
+            except TypeError:
+                country = None
             self.data[node]['country'] = country if country else 'private'
         #TODO layer 2 info?
 
