@@ -15,6 +15,7 @@ if __name__ == '__main__':
     #parser.add_argument('-e', '--exclude', nargs='*', help='exclude nodes from analysis')
     parser.add_argument('-fi', '--frequent-in', action='store_true', help='print frequently contacted nodes to stdout')
     parser.add_argument('-fo', '--frequent-out', action='store_true', help='print frequent source nodes to stdout')
+    parser.add_argument('--filter', help='Only keep connections with more N bytes transmitted', default=0, type=int)
 
     args = parser.parse_args()
 
@@ -33,6 +34,9 @@ if __name__ == '__main__':
             layer = 3
 
         g = GraphManager(packets, layer=layer)
+
+        if args.filter > 0:
+            g.filter(args.filter)
 
         if args.out:
             g.draw(filename=args.out)

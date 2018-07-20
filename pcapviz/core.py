@@ -46,6 +46,23 @@ class GraphManager(object):
         for src, dst in self.graph.edges():
             self._retrieve_edge_info(src, dst)
 
+    def filter(self, numbytes):
+        """
+        Filters connections not transmitting enough bytes
+        :return:
+        """
+        prune_ed = []
+        for edge in self.graph.edges():
+            connection = self.graph[edge[0]][edge[1]]
+            if connection['transmitted'] < numbytes:
+                prune_ed.append(edge)
+
+        for e in prune_ed:
+            self.graph.remove_edge(e[0], e[1])
+
+        self.graph.remove_nodes_from(networkx.isolates(self.graph))
+
+
     def get_in_degree(self, print_stdout=True):
         unsorted_degrees = self.graph.in_degree()
         return self._sorted_results(unsorted_degrees, print_stdout)
